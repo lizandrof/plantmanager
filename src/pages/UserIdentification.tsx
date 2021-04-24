@@ -7,9 +7,12 @@ import {
     Keyboard,
     KeyboardAvoidingView,
     TouchableWithoutFeedback,
-    Platform
+    Platform,
+    Alert
  } from 'react-native';
 import { useNavigation } from '@react-navigation/core';
+// importar AsyncStorage para gravar dados no dispositivo do usuário
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Button } from '../components/Button';
 
@@ -37,8 +40,30 @@ export function UserIdentification(){
         setName(value)  
     }    
 
-    function handleSubmit(){
-        navigation.navigate('Confirmation');
+    // função chamada no onPress do botão (função async)
+    async function handleSubmit(){
+        // antes de permitir a navegacao, verificar se o user não digitou o nome
+        if(!name)
+        // se não digitou, exibe mensagem com elemento 'Alert' do React
+            return Alert.alert('Me diz como chamar você 😅');
+        // try testa se foi recebido o nome de usuário, senão catch dá o alerta    
+        try{
+            // salvar nome no dispositivo do usuário com AsyncStorage
+            // usar uma chave usando o padrão iniciado com @nome-do-app:nome-da-informação
+            // o await diz para aguardar o nome ser salvo para depois prosseguir
+            await AsyncStorage.setItem('@plantamanager:user', name);        
+            // se o nome foi digitado, continua navegação
+            navigation.navigate('Confirmation', {
+                title: 'Prontinho',
+                subtitle: 'Agora vamos começar a cuidar das suas plantinhas com muito cuidado',
+                buttonTitle: 'Começar',
+                icon: 'smile',
+                nextScreen: 'PlantSelect'
+            }); 
+        }catch {
+            Alert.alert('Não foi possível salvar o seu nome 😅');
+        }
+        
     }
 
     return(
