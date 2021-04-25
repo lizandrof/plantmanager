@@ -20,7 +20,8 @@ import fonts from '../styles/fonts';
 export function Header(){
     // armazena estado do userName e tipa estado como string
     const [userName,setUserName] = useState<string>();
-    
+    // extramile
+    const [userPhoto, setUserPhoto] = useState<string>();
     // 
     useEffect (() => {
         // função deve ser async para recuperar o userName
@@ -28,8 +29,11 @@ export function Header(){
         async function loadStorageUserName() {
             // AsyncStorage.getItem recupera dados do dispositivo do usuário
             const user = await AsyncStorage.getItem('@plantamanager:user');
+            // extramile
+            const image = await AsyncStorage.getItem('@plantmanager:image');
             // armazena o nome do usuário no estado
             setUserName(user || '');
+            setUserPhoto(image || "")
         }
         // chama a função
         loadStorageUserName();
@@ -46,7 +50,7 @@ export function Header(){
             </View>
 
             <Image 
-                source={userImg}
+                source={{uri: userPhoto}}
                 style={styles.image} 
             />
 
@@ -67,7 +71,8 @@ const styles = StyleSheet.create({
     image: {
         width: 70,
         height: 70,
-        borderRadius: 40
+        borderRadius: 40,
+        backgroundColor: colors.gray
     },
     greeting: {
         fontSize: 32,

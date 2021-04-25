@@ -8,13 +8,18 @@ import {
     KeyboardAvoidingView,
     TouchableWithoutFeedback,
     Platform,
-    Alert
+    Alert,
+    TouchableOpacity,
+    Image
  } from 'react-native';
 import { useNavigation } from '@react-navigation/core';
 // importar AsyncStorage para gravar dados no dispositivo do usuário
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Button } from '../components/Button';
+
+import { MaterialIcons } from "@expo/vector-icons";
+import * as imagePicker from "expo-image-picker";
 
 import colors from '../styles/colors';
 import fonts from '../styles/fonts';
@@ -23,6 +28,7 @@ export function UserIdentification(){
     const [isFocused, setIsFocused] = useState(false);
     const [isFilled, setIsFilled] = useState(false);
     const [name, setName] = useState<string>();
+    const [photo, setPhoto] = useState<string>();
 
     const navigation = useNavigation();
 
@@ -38,7 +44,28 @@ export function UserIdentification(){
     function handleInputChange(value: string){
         setIsFilled(!!value);
         setName(value)  
-    }    
+    }
+    
+    async function handleUserImage() {
+        const { status } = await imagePicker.requestCameraPermissionsAsync();
+    
+        if (status !== "granted") {
+          return Alert.alert("Aviso", "Você não pode Adicionar uma imagem 🥲")
+        }
+        const result = await imagePicker.launchImageLibraryAsync({
+          allowsEditing: true,
+          quality: 1,
+          mediaTypes: imagePicker.MediaTypeOptions.Images,
+        });
+    
+        if (result.cancelled) {
+          return;
+        }
+    
+        const { uri: image } = result
+        await AsyncStorage.setItem('@plantmanager:image', image);
+        setPhoto(image)
+      }
 
     // função chamada no onPress do botão (função async)
     async function handleSubmit(){
@@ -97,11 +124,26 @@ export function UserIdentification(){
                             onChangeText={handleInputChange} 
                         />
 
+                    <Text style={styles.title}>Adicione uma imagem!</Text>
+                            <View style={styles.uploaded}>
+
+                            <TouchableOpacity onPress={handleUserImage}>
+                            {photo ? (
+                                <Image source={{ uri: photo }}
+                                style={styles.image}
+                                />
+                            ) : (
+                                <MaterialIcons style={styles.iconPhoto} name="add-a-photo" size={45} />
+                            )}
+                            </TouchableOpacity>
+                        </View>
+
                         <View style={styles.footer}>
                             <Button
                             title="Confirmar"
                             onPress={handleSubmit} />                    
                         </View>
+                        
                         
                     </View>
                 </TouchableWithoutFeedback>      
@@ -153,6 +195,18 @@ const styles = StyleSheet.create({
         width: '100%',
         marginTop: 40,
         paddingHorizontal: 20
+    },
+    iconPhoto: {
+        color: colors.body_dark,
+    },
+    image: {
+        width: 70,
+        height: 70,
+        borderRadius: 40
+    },
+    uploaded : {
+        alignSelf: 'center',
+        paddingTop: 10    
     }
 
 })
